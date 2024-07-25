@@ -5,7 +5,7 @@ html {
   text-align: center;
 }
 h1 {
-  font-size: 1.8rem;
+  font-size: 2.5rem;
   color: white;
 }
 p {
@@ -26,6 +26,7 @@ body {
   margin: 0 auto;
   display: grid;
   grid-gap: 2rem;
+  margin-bottom: 20px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 .card {
@@ -33,7 +34,7 @@ body {
   box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
 }
 .card-title {
-  font-size: 1.2rem;
+  font-size: 2rem;
   font-weight: bold;
   color: #034078
 }
@@ -44,10 +45,16 @@ body {
 #map {
   height: 100%;
 }
+img {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 
 table {
       border-collapse: collapse;
-      width: 100%;
+      width: 97%;
+      margin-left: 20px;
+      margin-right: 20px;
 }
 th, td {
       border: 1px solid #dddddd;
