@@ -24,9 +24,9 @@ const char* ssid = "Emi's Laptop";
 const char* password = "miniSCADA";
 // Global variables
 const int numNodes = 5;
-int lastState, interval = 1;  // the previous state from the input pin
+int  lastState, currentState, interval = 1;  // the previous state from the input pin
 bool RequestDataMode, locationCollectionMode, dataCollectionMode, rssiCollectionMode, webserverMode, flag, flag1 = false;
-int dataCount, rssiCount, currentState, x, Secs = 0;
+int dataCount, rssiCount, x, Secs = 0;
 String locas[numNodes][3], rssis[30][4], data[60][9], incoming, message, datad, rssid, locationString = "";
 byte msgCount = 0;
 unsigned long previousMillis, currentMillis = 0;
@@ -45,7 +45,6 @@ void setup() {
   pinMode(LORA_RST, OUTPUT);
   pinMode(LORA_CS, OUTPUT);
   pinMode(BUTTON_PIN_1, INPUT_PULLUP);
-  digitalWrite(BUTTON_PIN_1, HIGH);
 
   // manual reset LoRa module
   digitalWrite(LORA_RST, HIGH);
@@ -66,6 +65,7 @@ void setup() {
 
 void loop() {
   currentState = digitalRead(BUTTON_PIN_1);
+  //Serial.println(currentState);
   handleButtons();  // Check button to switch modes
 
   currentMillis = millis();
@@ -105,7 +105,7 @@ void loop() {
   }
 
   if (webserverMode) {
-    Serial.print("Post data");
+    Serial.print("Post data To Webserver");
     initWiFi();
     initSPIFFS();
     // Web Server Root URL
@@ -172,7 +172,7 @@ void onReceive(int packetSize) {
     return;  // skip rest of function
   }
   if (locationCollectionMode) {
-    Serial.println(incoming);
+    Serial.println("Receiving Location Data:");
     storeLocations(incoming);
     incoming = "";
     //locationString = incoming;
@@ -182,7 +182,7 @@ void onReceive(int packetSize) {
     rssiCollectionMode = false;
     flag = false;
   } else if (dataCollectionMode || flag) {
-    Serial.println(incoming);
+    Serial.println("Receiving Node Data:");
     Val1 = incoming.toInt();
     if (Val1 == 5) {
       storeData(datad);
@@ -207,6 +207,7 @@ void onReceive(int packetSize) {
     //   rssid += incoming;
     //   flag1 = true;
     // }
+    Serial.println("Receiving RSSi Data:");
     storeRssi(incoming);      //no
     webserverMode = true;     //no
     RequestDataMode = false;  //no
@@ -218,6 +219,7 @@ void onReceive(int packetSize) {
 }
 
 void storeLocations(String messages) {
+  Serial.println(messages);
   int nodeId;
   char longitudeStr[20], latitudeStr[20];  // Adjust buffer size as necessary
   int i = 0;
@@ -270,6 +272,7 @@ void storeData(String messages) {
 }
 
 void storeRssi(String messages) {
+  Serial.println(messages);
   rssiCount = 0;
   int nodeId, Yy, Mm, Dd, Hh, Ms, Ss, rssi;
   int startIndex = 0;
@@ -431,13 +434,13 @@ String getLocData() {
 }
 
 void handleButtons() {
-  if (lastState == HIGH && currentState == LOW) {
+  if ((lastState == LOW) && (currentState == LOW)) {
     RequestDataMode = true;
     locationCollectionMode = true;
     Serial.println("Request Data mode initiated.");
-    delay(1000);  // Debouncing delay
-    lastState = currentState;
+    delay(2000);  // Debouncing delay
   }
+  lastState = currentState;
   //digitalWrite(BUTTON_PIN_1, HIGH);
 }
 
