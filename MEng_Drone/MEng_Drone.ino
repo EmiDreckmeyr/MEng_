@@ -286,16 +286,19 @@ void loop() {
       readNodeLocations();
       sendMessage(locationsString, master_id, 0x07);
       locationsString = "";
+      flag = true;
     }
     if (Val == 2) {  //send node data
       readNodeData();
       sendMessage(dataString, master_id, 0x07);
       dataString = "";
+      flag = true;
     }
     if (Val == 3) {  //send rssi data
       readRssiData();
       sendMessage(rssiString, master_id, 0x07);
       rssiString = "";
+      flag = true;
     }
     BaseStation = false;
   }
@@ -391,8 +394,12 @@ void readNodeLocations() {
 void sendMessage(String outgoing, byte MasterNode, byte otherNode) {
   digitalWrite(LORA_CS, LOW);
   digitalWrite(SD_CS, HIGH);
-  Serial.print("Polling Node ");
-  Serial.println(otherNode);
+  if(BaseStation){
+    Serial.println(" Sending data to Base ");
+  } else {
+    Serial.print("Polling Node ");
+    Serial.println(otherNode);
+  }
 
   int packetSize = 240;  // Maximum payload size per packet
 
@@ -440,8 +447,8 @@ void onReceive(int packetSize) {
   Serial.println("incoming");
   int recipient = LoRa.read();  // recipient address
   byte sender = LoRa.read();    // sender address
-  if (sender == 0X07)
-    BaseStation = true;
+  if (recipient == 7)
+    BaseStation = 1;
   if (sender == 0X01)
     SenderNode = "Node1";
   if (sender == 0X02)
@@ -458,10 +465,11 @@ void onReceive(int packetSize) {
   while (LoRa.available()) {
     incoming += (char)LoRa.read();
   }
-  if (BaseStation) {
+  if(BaseStation) {
     Serial.print("Received LoRa message from Base Station: ");
     Serial.println(incoming);
     Val = incoming.toInt();
+    flag = false;
   } else if (locationCollectionMode) {
     // print RSSI of packet
     String rssi1 = "{" + String(SenderNode) + ";" + String(dayStamp) + ";" + String(timeStamp) + ";" + String(LoRa.packetRssi()) + "}\n";
