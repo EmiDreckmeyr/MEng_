@@ -147,6 +147,8 @@ void setup() {
   Serial.println("Free Heap: " + String(ESP.getFreeHeap()));
 
   LoRa.setTxPower(TX_POWER);
+  LoRa.setSpreadingFactor(11);
+  LoRa.setSignalBandwidth(250E3);
   Secs = 0;
 
   Serial.println("LoRa, SD card, and buttons initialized successfully!");
@@ -237,7 +239,7 @@ void loop() {
     previousMillis = currentMillis;
     Secs = Secs + 1;
     //Serial.println(Secs);
-    if (Secs > 16) {
+    if (Secs > 20) {
       Secs = 0;
       r = r + 1;
       if (r == numNodes) {
@@ -246,7 +248,7 @@ void loop() {
       }
     }
     // Priority poll nearest node
-    if ((Secs == 15) || (Secs == 16)) {
+    if ((Secs == 5) || (Secs == 6)) {
       
       // Mode 1: Individual slave Node GPS location collection
       if (locationCollectionMode) {
@@ -266,7 +268,7 @@ void loop() {
       }
     }
     // Sequential query
-    if ((Secs == 7) || (Secs == 8)) {
+    if ((Secs == 15) || (Secs == 16)) {
       // Mode 1: Individual slave Node GPS location collection
       if (locationCollectionMode) {
         message = "1";

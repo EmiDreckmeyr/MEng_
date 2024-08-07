@@ -37,7 +37,7 @@ BH1750 lightMeter;
 TinyGPSPlus gps;
 HardwareSerial neogps(1);
 
-byte device_id = 0x05;
+byte device_id = 0x01;
 byte master_id = 0xFF;
 String dataMessage = "hi";
 int indexing = 0;
@@ -47,16 +47,14 @@ double dewPoint;
 String dayStamp, timeStamp;
 byte val1, val2, val3;
 long int t1, t2;
-int day, month, year;
+int day, month, year = 0;
 int Val = 0;
-int hour = 19;
-RTC_DATA_ATTR int minute = 22;
-RTC_DATA_ATTR int second = 27;
+int hour, minute, second = 0;
 // Define deep sleep options
 uint64_t uS_TO_S_FACTOR = 1000000;  // Conversion factor for micro seconds to seconds
 // Sleep for 10 minutes = 600 seconds
 uint64_t TIME_TO_SLEEP_1 = 10;
-uint64_t TIME_TO_SLEEP_2 = 300;
+uint64_t TIME_TO_SLEEP_2 = 900;
 String sensorDataBuff = "";
 // Save reading number on RTC memory
 RTC_DATA_ATTR int msgCount = 0;
@@ -110,6 +108,8 @@ void setup() {
   }
 
   LoRa.setTxPower(20);
+  LoRa.setSpreadingFactor(11);
+  LoRa.setSignalBandwidth(250E3);
 
   Serial.println("LoRa initialization gooood!");
 
@@ -144,8 +144,8 @@ void setup() {
   bootCount++;
   dataCount++;
   Serial.println("Boot count: " + String(bootCount));
-  //Serial.println("Data: ");
-  //Serial.println(String(sensorDataBuffer));
+  Serial.println("Data: ");
+  Serial.println(String(sensorDataBuffer));
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
   //esp_sleep_disable_wakeup_source(BIT(LORA_GO_INT), ESP_EXT1_WAKEUP_ANY_HIGH);
 
@@ -182,9 +182,7 @@ void loop() {
   if (SDCARD) {
     digitalWrite(switchpower, HIGH);
     getReadings();
-    //getTimeStamp();
-    dayStamp = String(2024) + "-" + String(07) + "-" + String(23);
-    timeStamp = String(hour) + ":" + String(minute) + ":" + String(second);
+    getTimeStamp();
     logSDCard();
     readingID++;
     SD.end();
@@ -401,14 +399,9 @@ void getReadings() {
 }
 // Function to get time stamp
 void getTimeStamp() {
-  dayStamp = String(2024) + "-" + String(07) + "-" + String(23);
-  timeStamp = String(hour) + ":" + String(minute) + ":" + String(second);
-  minute = minute + 5;
-  second = second + 4;
-  neogps.available();
 
   for (int k = 0; k < 1500; k++) {
-    //while (neogps.available() > 0) {
+    while (neogps.available() > 0) {
     gps.encode(neogps.read());
     //Serial.print("Latitude= ");
     Latitude = gps.location.lat();
@@ -448,9 +441,8 @@ void getTimeStamp() {
     //Serial.println(timeStamp);
     //Serial.println();
     //}
-    //}
+    }
   }
-  neogps.end();
 }
 
 // Write the sensor readings on the SD card
